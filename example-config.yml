@@ -1,0 +1,9 @@
+rsync_location: /usr/bin/rsync
+
+volumes:
+  - name: Movies
+    src: /mnt/Movies
+    dst: /mnt/Movies_backup
+  - name: TV Shows
+    src: /mnt/TV Shows
+    dst: /mnt/TV Shows_backup
