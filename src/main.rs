@@ -1,6 +1,6 @@
 extern crate yaml_rust;
 use std::fs;
-use yaml_rust::{YamlLoader};
+use yaml_rust::YamlLoader;
 
 fn main() {
     // Parse command line arguments
@@ -18,31 +18,39 @@ fn main() {
     let config_yaml = YamlLoader::load_from_str(filecontents.as_str()).unwrap();
     let config = &config_yaml[0];
 
-    println!("rsync: ");
     let rsync_location = config["rsync"]["location"].as_str().unwrap_or("rsync");
-    println!("\tlocation: {rsync_location}");
-
     let rsync_args = config["rsync"]["args"].as_str().unwrap_or("-a");
-    println!("\targs: {rsync_args}");
+    println!("rsync command: {rsync_location} {rsync_args} <src> <dst>");
 
-    println!("snapper: ");
     let snapper_enabled = config["snapper"]["enabled"].as_bool().unwrap_or(false);
-    println!("\tenabled: {snapper_enabled}");
-
+    let snapper_location = config["snapper"]["location"].as_str().unwrap_or("snapper");
+    let snapper_cleanup = config["snapper"]["cleanup"].as_str().unwrap_or("number");
     if snapper_enabled {
-        let snapper_location = config["snapper"]["location"].as_str().unwrap_or("snapper");
-        println!("\tlocation: {snapper_location}");
-
-        let snapper_cleanup = config["snapper"]["cleanup"].as_str().unwrap_or("number");
-        println!("\tcleanup: {snapper_cleanup}");
+        println!("snapper command: {snapper_location} -c <volume> create -c {snapper_cleanup}");
+    } else {
+        println!("snapper disabled");
     }
 
-    println!("Volumes: ");
+    println!(" ");
     for volume in config["volumes"].clone().into_iter() {
         let name = volume["name"].as_str().unwrap();
         let src = volume["src"].as_str().unwrap();
         let dst = volume["dst"].as_str().unwrap();
-        println!("\t{name} [{src} ===> {dst}]");
+        println!("{name} [{src} ===> {dst}]");
+
+        let rsync_test = format!("{rsync_location} -an --out-format=\"%f\" {src} {dst}");
+        println!("{rsync_test}");
+
+        let rsync_command = format!("{rsync_location} {rsync_args} {src} {dst}");
+        println!("{rsync_command}");
+
+        if snapper_enabled {
+            let snapper_command = format!("{snapper_location} -c {name} create -c {snapper_cleanup}");
+            println!("{snapper_command}");
+
+        }
+
+        println!(" ")
     }
     
     println!("Backvol completed.");
