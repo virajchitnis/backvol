@@ -1,4 +1,10 @@
-rsync_location: /usr/bin/rsync
+rsync:
+  location: /usr/bin/rsync
+  args: -aPhv
+snapper:
+  enabled: true
+  location: /usr/bin/snapper
+  cleanup: number
 
 volumes:
   - name: Movies
